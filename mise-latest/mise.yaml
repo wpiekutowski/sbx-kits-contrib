@@ -1,0 +1,55 @@
+# syntax=docker/sandbox-kit:3
+schemaVersion: "3"
+displayName: mise (mise-en-place)
+description: "The polyglot dev-tool version manager (https://mise.jdx.dev) — installs the mise CLI and wires up shell activation so the agent can run `mise install`, `mise use`, and per-project `.mise.toml` resolutions in the sandbox."
+
+kind: mixin
+
+version: "1"
+provides: ["mise@1"]
+
+capabilities:
+  - type: com.docker.sandbox/network-policy@1
+    config:
+      runtime:
+        allow:
+          - github.com
+          - api.github.com
+          - objects.githubusercontent.com
+          - release-assets.githubusercontent.com
+
+  - type: com.docker.sandbox/lifecycle@1
+    config:
+      install:
+        - description: "Install mise"
+          user: "1000"
+          #Source https://mise.jdx.dev/installing-mise.html#verify-the-install-script
+          #Unfortulately `gpg --recv-keys` doesn't work in sbx
+          command: |
+            set -eu; \
+            fingerprint=24853EC9F655CE80B48E6C3A8B81C9D17413A06D
+            tmp=$(mktemp)
+            trap 'rm -f "$tmp"' EXIT
+            
+            curl --fail --silent --show-error \
+              "https://keys.openpgp.org/vks/v1/by-fingerprint/$fingerprint" \
+              -o "$tmp"
+            
+            actual=$(gpg --show-keys --with-colons "$tmp" | awk -F: '$1 == "fpr" { print $10; exit }')
+            
+            if [ "$actual" != "$fingerprint" ]; then
+              echo "Fingerprint mismatch: got $actual" >&2
+              exit 1
+            fi
+            
+            gpg --import "$tmp"
+            curl -fsSL -o install.sh.sig https://mise.jdx.dev/install.sh.sig; \
+            gpg --output install.sh --decrypt install.sh.sig; \
+            MISE_MINIMUM_RELEASE_AGE=4d sh install.sh; \
+            rm install.sh install.sh.sig
+        - description: "Hook `mise activate bash` into ~/.bashrc for interactive shells"
+          user: "1000"
+          command: |
+            set -euo pipefail
+            grep -qF 'mise activate bash' ~/.bashrc 2>/dev/null || \
+              printf '\n# mise (added by sbx-kits-contrib/mise)\nexport MISE_TRUSTED_CONFIG_PATHS="/"\neval "$(mise activate bash)"\n' >> ~/.bashrc
