@@ -13,6 +13,11 @@ capabilities:
     config:
       runtime:
         allow:
+          - keys.openpgp.org
+          - mise.run
+          - mise.jdx.dev
+          - mise-versions.jdx.dev
+          - tuf-repo-cdn.sigstore.dev
           - github.com
           - api.github.com
           - objects.githubusercontent.com
