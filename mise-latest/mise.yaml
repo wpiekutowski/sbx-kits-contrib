@@ -1,7 +1,10 @@
 # syntax=docker/sandbox-kit:3
 schemaVersion: "3"
 displayName: mise (mise-en-place)
-description: "The polyglot dev-tool version manager (https://mise.jdx.dev) — installs the mise CLI and wires up shell activation so the agent can run `mise install`, `mise use`, and per-project `.mise.toml` resolutions in the sandbox."
+description: |
+  The polyglot dev-tool version manager (https://mise.jdx.dev) — installs the mise CLI and wires up
+  shell activation so the agent can run `mise install`, `mise use`, and per-project `./mise.toml`
+  resolutions in the sandbox.
 
 kind: mixin
 
@@ -9,6 +12,9 @@ version: "1"
 provides: ["mise@1"]
 
 capabilities:
+  - type: com.docker.sandbox/agent-context@1
+    config:
+      contentFile: ./context.md
   - type: com.docker.sandbox/network-policy@1
     config:
       runtime:
