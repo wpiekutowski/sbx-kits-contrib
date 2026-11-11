@@ -26,8 +26,18 @@ capability name has one owner.
 ## What it carries
 
 kiro-cli and its seeded state, the `start.sh` device-flow launcher, the egress
-policy Kiro's auth, chat and telemetry backends need, and the hooks that re-run
-`kiro-cli setup` at create and register the MCP gateway at boot.
+policy Kiro's auth, chat and telemetry backends need, and the hooks that
+create the state database if it is missing (`kiro-cli settings list`) at create
+and register the MCP gateway at boot.
+
+The policy allows `oidc.us-east-1.amazonaws.com`, the AWS SSO OIDC endpoint AWS
+Builder ID's device-flow login needs; without it the login fails with
+`error: service error` before printing a code
+([docker/sbx-releases#818](https://github.com/docker/sbx-releases/issues/818)).
+IAM Identity Center users outside us-east-1 may need
+`oidc.<region>.amazonaws.com`, which the kit does not list; allow it for your
+sandbox with
+`sbx policy allow network --sandbox <sandbox> oidc.<region>.amazonaws.com:443`.
 
 ## No version pin
 
