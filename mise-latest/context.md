@@ -1,25 +1,9 @@
 ## mise
 
-This sandbox carries [Mistral Vibe](https://github.com/mistralai/vibe) as a
-mixin: the CLI is installed, but the sandbox's launch command belongs to the
-base workload. The working directory is the user's project, mounted from the
-host.
+[mise](https://mise.jdx.dev) is installed at `~/.local/bin/mise`. It manages the dev tools that the global config `~/.config/mise/config.toml` and each project's `mise.toml` declare.
 
-Start it the way the standalone kit does:
-
-```console
-vibe-start          # vibe --trust --agent "$VIBE_AGENT"
-```
-
-Prefer the launcher over the bare `vibe` binary. It carries the two flags the
-standalone kit's entrypoint carries: `--trust`, because the workspace is the
-user's own project and the trust prompt would only block a non-interactive
-start, and `--agent`, which selects the profile the kit was installed with
-(`--kit-arg agent=ask` narrows it).
-
-MISTRAL_API_KEY holds a sentinel value, not the real key: the sandbox proxy
-swaps it for the real one on requests to Mistral. Do not read, print or
-reconfigure it.
-
-`~/.vibe` is a persistent volume, so config, sessions, logs and custom agents
-survive a re-create of the sandbox under the same name.
+- mise activates from `~/.bashrc`, which only interactive and login bash read. Elsewhere, including an agent's command shell, its tools are not on `PATH`: run them with `mise x -- <command>`, or through a task with `mise run <task>`.
+- Inside `mise x` and mise tasks, a mise tool shadows a system tool of the same name.
+- `[env]` in a `mise.toml` overrides variables already set in the shell.
+- `MISE_TRUSTED_CONFIG_PATHS="/"` is exported from `~/.bashrc` only. If mise reports an untrusted config elsewhere, run `mise trust`.
+- `mise ls` lists the installed tools and the config file that asks for each.
